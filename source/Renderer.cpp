@@ -31,11 +31,18 @@ void Renderer::Render(Scene* pScene) const
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-			float gradient = px / static_cast<float>(m_Width);
-			gradient += py / static_cast<float>(m_Width);
-			gradient /= 2.0f;
+			//float gradient = px / static_cast<float>(m_Width);
+			//gradient += py / static_cast<float>(m_Width);
+			//gradient /= 2.0f;
+			const int aspectRatio{m_Width/ m_Height};
 
-			ColorRGB finalColor{ gradient, gradient, gradient };
+			float cx{ (2 * (px + 0.5f)) / m_Width - 1.f * aspectRatio};
+			float cy{ 1 - ((2 * (py + 0.5f)) / m_Height) };
+			const Vector3 rayDirection{cx,cy,camera.forward.z };
+
+			Ray hitRay{ {0,0,0},rayDirection };
+
+			ColorRGB finalColor{ rayDirection.x, rayDirection.y, rayDirection.z};
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();
