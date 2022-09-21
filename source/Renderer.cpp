@@ -36,13 +36,30 @@ void Renderer::Render(Scene* pScene) const
 			//gradient /= 2.0f;
 			const int aspectRatio{m_Width/ m_Height};
 
-			float cx{ (2 * (px + 0.5f)) / m_Width - 1.f * aspectRatio};
-			float cy{ 1 - ((2 * (py + 0.5f)) / m_Height) };
+			const float cx{ (2 * (px + 0.5f)) / m_Width - 1.f * aspectRatio};
+			const float cy{ 1 - ((2 * (py + 0.5f)) / m_Height) };
 			const Vector3 rayDirection{cx,cy,camera.forward.z };
 
-			Ray hitRay{ {0,0,0},rayDirection };
+			//Ray hitRay{ {0,0,0},rayDirection };
 
-			ColorRGB finalColor{ rayDirection.x, rayDirection.y, rayDirection.z};
+			//ColorRGB finalColor{ rayDirection.x, rayDirection.y, rayDirection.z};
+
+			Ray viewRay{ {0,0,0},rayDirection };
+
+			HitRecord closestHit{};
+
+			ColorRGB finalColor{};
+
+			Sphere testSphere{ {0.f,0.f,100.f},50.f,0 };
+
+			GeometryUtils::HitTest_Sphere(testSphere, viewRay, closestHit);
+
+			if(closestHit.didHit)
+			{
+				//finalColor = materials[closestHit.materialIndex]->Shade();
+				const float scaled_t{ (closestHit.t - 50.f) / 40.f };
+				finalColor = { scaled_t,scaled_t,scaled_t };
+			}
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();

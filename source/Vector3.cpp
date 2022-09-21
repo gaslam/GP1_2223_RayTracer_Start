@@ -51,7 +51,6 @@ namespace dae {
 
 	Vector3 Vector3::Cross(const Vector3& v1, const Vector3& v2)
 	{
-		//todo W1
 		float x{ v1.y * v2.z - v1.z * v1.y };
 		float y{ v1.z * v2.x - v1.x * v2.z };
 		float z{ v1.x * v2.y - v1.y - v2.x};
@@ -89,9 +88,19 @@ namespace dae {
 		return { x * scale, y * scale, z * scale };
 	}
 
+	Vector3 Vector3::operator*(const Vector3& v) const
+	{
+		return { x * v.x, y * v.y, z * v.z };
+	}
+
 	Vector3 Vector3::operator/(float scale) const
 	{
 		return { x / scale, y / scale, z / scale };
+	}
+
+	Vector3 Vector3::operator-(float number) const
+	{
+		return {x - number, y - number, z - number};
 	}
 
 	Vector3 Vector3::operator+(const Vector3& v) const
