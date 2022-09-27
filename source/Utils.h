@@ -12,7 +12,6 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
 
 			const float a{ Vector3::Dot(ray.direction, ray.direction) };
 			const Vector3 rayMinusSphere{ ray.origin - sphere.origin };
@@ -56,7 +55,6 @@ namespace dae
 		//PLANE HIT-TESTS
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
 			const float t{ (Vector3::Dot((plane.origin - ray.origin),plane.normal))/ (Vector3::Dot(ray.direction, plane.normal))};
 			if(t > ray.min && t < ray.max)
 			{
