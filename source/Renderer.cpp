@@ -35,16 +35,17 @@ void Renderer::Render(Scene* pScene) const
 			//gradient += py / static_cast<float>(m_Width);
 			//gradient /= 2.0f;
 			const float aspectRatio{float(m_Width)/ m_Height};
+			const float fov{ tanf((camera.fovAngle * TO_RADIANS)/2.f)};
 
-			const float cx{ ((2.f * (px + 0.5f)) / m_Width - 1.f) * aspectRatio};
-			const float cy{ 1.f - ((2.f * py) / m_Height) };
+			const float cx{ ((2.f * (px + 0.5f)) / m_Width - 1.f) * aspectRatio * fov};
+			const float cy{ (1.f - ((2.f * py) / m_Height)) * fov};
 			const Vector3 rayDirection{cx,cy,camera.forward.z };
 
 			//Ray hitRay{ {0,0,0},rayDirection };
 
 			//ColorRGB finalColor{ rayDirection.x, rayDirection.y, rayDirection.z};
 
-			Ray viewRay{ {0,0,0},rayDirection };
+			Ray viewRay{ camera.origin,rayDirection };
 
 			HitRecord closestHit{};
 
