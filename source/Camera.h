@@ -83,11 +83,7 @@ namespace dae
 				totalPitch += (mouseY / speed) * deltaTime;
 			}
 
-			Matrix Mc{
-			{cosf(totalYaw),0,sinf(totalYaw),0} ,
-			{sinf(totalYaw) * sinf(totalPitch),cosf(totalPitch),-sinf(totalPitch) * cosf(totalYaw),0},
-			{-cosf(totalPitch) * sinf(totalYaw),sinf(totalPitch),cosf(totalPitch) * cosf(totalYaw),0},
-			{0,0,0,1} };
+			Matrix Mc{ Matrix::CreateRotation(Vector3(-totalYaw, totalPitch, forward.z))};
 
 			forward = Vector3::UnitZ;
 			forward = Mc.TransformVector(forward);
