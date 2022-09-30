@@ -12,7 +12,7 @@
 
 using namespace dae;
 
-Renderer::Renderer(SDL_Window * pWindow) :
+Renderer::Renderer(SDL_Window* pWindow) :
 	m_pWindow(pWindow),
 	m_pBuffer(SDL_GetWindowSurface(pWindow))
 {
@@ -34,12 +34,15 @@ void Renderer::Render(Scene* pScene) const
 			//float gradient = px / static_cast<float>(m_Width);
 			//gradient += py / static_cast<float>(m_Width);
 			//gradient /= 2.0f;
-			const float aspectRatio{float(m_Width)/ m_Height};
-			const float fov{ tanf((camera.fovAngle * TO_RADIANS)/2.f)};
+			const float aspectRatio{ float(m_Width) / m_Height };
+			const float fov{ tanf((camera.fovAngle * TO_RADIANS)  / 2.f)  };
 
-			const float cx{ ((2.f * (px + 0.5f)) / m_Width - 1.f) * aspectRatio * fov};
-			const float cy{ (1.f - ((2.f * py) / m_Height)) * fov};
-			const Vector3 rayDirection{cx,cy,camera.forward.z };
+			const float cx{ (((2.f * (px + 0.5f)) / m_Width) - 1.f) *aspectRatio  * fov };
+			const float cy{ float(1.f - ((2.f * (py + 0.5f)) / m_Height)) * fov  };
+			Vector3 rayDirection{ cx, cy,1.f };
+			Matrix camToWorldView{ camera.CalculateCameraToWorld() };
+			rayDirection = camToWorldView.TransformVector(rayDirection);
+			rayDirection.Normalize();
 
 			//Ray hitRay{ {0,0,0},rayDirection };
 
@@ -53,7 +56,7 @@ void Renderer::Render(Scene* pScene) const
 
 			pScene->GetClosestHit(viewRay, closestHit);
 
-			if(closestHit.didHit)
+			if (closestHit.didHit)
 			{
 				finalColor = materials[closestHit.materialIndex]->Shade();
 				//const float scaled_t{ (closestHit.t - 50.f) / 40.f };
