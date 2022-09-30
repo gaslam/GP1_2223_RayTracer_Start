@@ -126,17 +126,17 @@ namespace dae {
 	Matrix Matrix::CreateRotationY(float yaw)
 	{
 		return {
-		{cosf(yaw),0,-sinf(yaw),0},
+		{cosf(yaw),0,sinf(yaw),0},
 		{0,1,0,0},
-		{sin(yaw),0,cos(yaw),0},
+		{-sin(yaw),0,cos(yaw),0},
 		{0,0,0,1} };
 	}
 
 	Matrix Matrix::CreateRotationZ(float roll)
 	{
 		return {
-		{cosf(roll),sinf(roll),0,0},
-		{-sinf(roll),cosf(roll),0,0},
+		{cosf(roll),-sinf(roll),0,0},
+		{sinf(roll),cosf(roll),0,0},
 		{0,0,1,0},
 			{0,0,0,1}
 		};
@@ -145,8 +145,8 @@ namespace dae {
 	Matrix Matrix::CreateRotation(const Vector3& r)
 	{
 		const Matrix xRot{ CreateRotationX(r.x) };
-		const Matrix yRot{ CreateRotationX(r.y) };
-		const Matrix zRot{ CreateRotationX(r.z) };
+		const Matrix yRot{ CreateRotationY(r.y) };
+		const Matrix zRot{ CreateRotationZ(r.z) };
 		return Matrix{xRot * yRot * zRot};
 	}
 
