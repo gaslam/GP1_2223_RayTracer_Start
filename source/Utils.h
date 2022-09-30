@@ -30,7 +30,7 @@ namespace dae
 			if(t < ray.min)
 			{
 				t = (-b + sqrtf(D)) / (2 * a);
-				if(t < ray.min && t > ray.max)
+				if(t < ray.min || t > ray.max)
 				{
 					hitRecord.didHit = false;
 					return false;
@@ -64,6 +64,7 @@ namespace dae
 				hitRecord.t = t;
 				return true;
 			}
+			hitRecord.didHit = false;
 			return false;
 		}
 
