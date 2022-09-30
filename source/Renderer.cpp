@@ -59,8 +59,18 @@ void Renderer::Render(Scene* pScene) const
 			if (closestHit.didHit)
 			{
 				finalColor = materials[closestHit.materialIndex]->Shade();
-				//const float scaled_t{ (closestHit.t - 50.f) / 40.f };
-				//finalColor = {scaled_t,scaled_t,scaled_t};
+				for (const Light& light : lights)
+				{
+					Vector3 lightDirection{ LightUtils::GetDirectionToLight(light, closestHit.origin + (closestHit.normal * 0.0001f)) };
+					const float rayMag{ lightDirection.Normalize()};
+					Ray direction{ closestHit.origin + (closestHit.normal * 0.0001f),lightDirection };
+					direction.max = rayMag;
+					direction.min = 0.0001f;
+					if (pScene->DoesHit(direction))
+					{
+						finalColor *= 0.5f;
+					}
+				}
 			}
 
 			//Update Color in Buffer

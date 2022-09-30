@@ -108,11 +108,14 @@ namespace dae
 	namespace LightUtils
 	{
 		//Direction from target to light
-		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
+		inline Vector3 GetDirectionToLight(const Light& light, const Vector3& origin)
 		{
-			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
+			if (light.origin.SqrMagnitude() != FLT_MAX)
+			{
+				Vector3 originToLight{ light.origin - origin };
+				return originToLight;
+			}
+			return -light.direction;
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
