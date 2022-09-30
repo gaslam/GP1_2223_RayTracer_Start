@@ -29,7 +29,6 @@ namespace dae {
 	void dae::Scene::GetClosestHit(const Ray& ray, HitRecord& closestHit) const
 	{
 		HitRecord selectedHit{ };
-		selectedHit.t = ray.max;
 
 		for (const Plane& plane : m_PlaneGeometries)
 		{
