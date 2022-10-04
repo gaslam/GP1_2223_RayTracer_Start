@@ -70,11 +70,11 @@ namespace dae
 			if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))
 			{
 				totalYaw += (mouseX / speed) * deltaTime;
-				//if (mouseY != 0)
-				//{
-				//	Vector3 dir{ forward * (deltaTime * speed) };
-				//	origin += mouseY > 0 ? dir : -dir;
-				//}
+				if (mouseY != 0)
+				{
+					Vector3 dir{ forward * (deltaTime * speed) };
+					origin += mouseY > 0 ? dir : -dir;
+				}
 			}
 
 			if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
