@@ -92,9 +92,9 @@ namespace dae
 
 		void HandleKeyMovement(const uint8_t* pKeyboardState, const float speed, const float deltaTime)
 		{
+			const float lengthSquared{ forward.SqrMagnitude() };
 			if (pKeyboardState[SDL_SCANCODE_D])
 			{
-				float lengthSquared{ forward.SqrMagnitude() };
 				if (forward.z >= 0.f)
 				{
 					origin.x += (speed * deltaTime);
@@ -108,7 +108,6 @@ namespace dae
 
 			if (pKeyboardState[SDL_SCANCODE_A])
 			{
-				float lengthSquared{ forward.SqrMagnitude() };
 				if (forward.z < 0.f)
 				{
 					origin.x += (speed * deltaTime);
