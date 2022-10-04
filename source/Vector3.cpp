@@ -52,7 +52,7 @@ namespace dae {
 	Vector3 Vector3::Cross(const Vector3& v1, const Vector3& v2)
 	{
 		float x{ v1.y * v2.z - v2.y * v1.z};
-		float y{ v1.x * v2.z + v2.x * v1.z };
+		float y{ -(v1.x * v2.z - v2.x * v1.z) };
 		float z{ v1.x * v2.y - v2.x * v1.y};
 
 		return {x,y,z};

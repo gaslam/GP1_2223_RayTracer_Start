@@ -25,12 +25,12 @@ namespace dae
 				return false;
 			}
 
-			float t{ (-b - sqrtf(D)) / (2 * a) };
+			float t{ (-b - sqrtf(D)) / (2 * a)};
 
-			if(t < ray.min)
+			if(t > ray.max || t < ray.min)
 			{
 				t = (-b + sqrtf(D)) / (2 * a);
-				if(t < ray.min || t > ray.max)
+				if(t > ray.max || t < ray.min)
 				{
 					hitRecord.didHit = false;
 					return false;

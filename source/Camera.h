@@ -70,11 +70,11 @@ namespace dae
 			if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))
 			{
 				totalYaw += (mouseX / speed) * deltaTime;
-				if (mouseY != 0)
-				{
-					Vector3 dir{ forward * (deltaTime * speed) };
-					origin += mouseY > 0 ? dir : -dir;
-				}
+				//if (mouseY != 0)
+				//{
+				//	Vector3 dir{ forward * (deltaTime * speed) };
+				//	origin += mouseY > 0 ? dir : -dir;
+				//}
 			}
 
 			if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
@@ -83,10 +83,10 @@ namespace dae
 				totalPitch += (mouseY / speed) * deltaTime;
 			}
 
-			Matrix Mc{ Matrix::CreateRotation(Vector3(-totalYaw, totalPitch, forward.z))};
+			Matrix Mc{ Matrix::CreateRotation(Vector3(-totalPitch,totalYaw,0.f))};
 
-			forward = Vector3::UnitZ;
-			forward = Mc.TransformVector(forward);
+			forward = Mc.TransformVector(Vector3::UnitZ);
+			forward.Normalize();
 		}
 
 
