@@ -34,11 +34,11 @@ void Renderer::Render(Scene* pScene) const
 			//float gradient = px / static_cast<float>(m_Width);
 			//gradient += py / static_cast<float>(m_Width);
 			//gradient /= 2.0f;
-			const float aspectRatio{ float(m_Width) / m_Height };
-			const float fov{ tanf((camera.fovAngle * TO_RADIANS)  / 2.f)  };
+			const float aspectRatio{ static_cast<float>(m_Width) / static_cast<float>(m_Height) };
+			const float fov{ tanf((camera.fovAngle * TO_RADIANS) / 2.f) };
 
-			const float cx{ (((2.f * (px + 0.5f)) / m_Width) - 1.f) *aspectRatio  * fov };
-			const float cy{ float(1.f - ((2.f * (py + 0.5f)) / m_Height)) * fov  };
+			const float cx{ (((2.f * (px + 0.5f)) / static_cast<float>(m_Width)) - 1.f) * aspectRatio * fov };
+			const float cy{static_cast<float>(1.f - ((2.f * (py + 0.5f)) / static_cast<float>(m_Height))) * fov };
 			Vector3 rayDirection{ cx, cy,1.f };
 			rayDirection.Normalize();
 			Matrix camToWorldView{ camera.CalculateCameraToWorld() };
@@ -58,18 +58,26 @@ void Renderer::Render(Scene* pScene) const
 
 			if (closestHit.didHit)
 			{
-				finalColor = materials[closestHit.materialIndex]->Shade();
+				Vector3 originOffset{ closestHit.origin + (closestHit.normal * 0.0001f) };
 				for (const Light& light : lights)
 				{
-					Vector3 lightDirection{ LightUtils::GetDirectionToLight(light, closestHit.origin + (closestHit.normal * 0.001f)) };
-					const float rayMag{ lightDirection.Normalize()};
-					Ray direction{ closestHit.origin + (closestHit.normal * 0.001f),lightDirection };
-					direction.max = rayMag;
-					direction.min = 0.0001f;
-					if (pScene->DoesHit(direction))
+					Vector3 lightDirection{ LightUtils::GetDirectionToLight(light, closestHit.origin) };
+					float lightDirectionMag{ lightDirection.Normalize() };
+
+					Ray invDirectionLight{ originOffset, LightUtils::GetDirectionToLight(light, originOffset).Normalized(), 0.0001f, lightDirectionMag };
+					if(pScene->DoesHit(invDirectionLight))
 					{
-						finalColor *= 0.5f;
+						continue;
 					}
+
+					const float observedArea{ Vector3::Dot(lightDirection, closestHit.normal) };
+
+					if(observedArea < 0.f)
+						continue;
+
+					finalColor += LightUtils::GetRadiance(light, closestHit.origin) * materials[closestHit.materialIndex]
+						->Shade(closestHit, -lightDirection, rayDirection) * observedArea;
+
 				}
 			}
 

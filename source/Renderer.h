@@ -31,5 +31,6 @@ namespace dae
 
 		int m_Width{};
 		int m_Height{};
+		bool m_ShadowsEnabled{ true };
 	};
 }

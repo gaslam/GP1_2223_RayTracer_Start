@@ -13,9 +13,9 @@ namespace dae
 		 */
 		static ColorRGB Lambert(float kd, const ColorRGB& cd)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			auto p{  cd * kd };
+
+			return p  / PI;
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
@@ -36,9 +36,9 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const Vector3 reflect{ l - 2.f * Vector3::Dot(n,l) * n };
+			float cosReflect{ pow(Vector3::Dot(reflect, v), exp) };
+			return {ks * cosReflect};
 		}
 
 		/**
