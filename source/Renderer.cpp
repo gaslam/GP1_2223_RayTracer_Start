@@ -21,6 +21,23 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_pBufferPixels = static_cast<uint32_t*>(m_pBuffer->pixels);
 }
 
+
+void Renderer::CycleLightningMode()
+{
+	int index{ static_cast<int>(m_CurrentLightningMode) };
+	if (index >= lightningModeMaxIndex)
+	{
+		index = 0;
+	}
+	else
+	{
+		++index;
+	}
+
+	m_CurrentLightningMode = static_cast<LightningMode>(index);
+}
+
+
 void Renderer::Render(Scene* pScene) const
 {
 	Camera& camera = pScene->GetCamera();
@@ -62,12 +79,16 @@ void Renderer::Render(Scene* pScene) const
 				for (const Light& light : lights)
 				{
 					Vector3 lightDirection{ LightUtils::GetDirectionToLight(light, closestHit.origin) };
-					float lightDirectionMag{ lightDirection.Normalize() };
+					Vector3 invRayDirection{ -rayDirection };
+					const float lightDirectionMag{ lightDirection.Normalize() };
 
-					Ray invDirectionLight{ originOffset, LightUtils::GetDirectionToLight(light, originOffset).Normalized(), 0.0001f, lightDirectionMag };
-					if(pScene->DoesHit(invDirectionLight))
+					if(m_ShadowsEnabled)
 					{
-						continue;
+						Ray invDirectionLight{ originOffset, LightUtils::GetDirectionToLight(light, originOffset).Normalized(), 0.0001f, lightDirectionMag };
+						if (pScene->DoesHit(invDirectionLight))
+						{
+							continue;
+						}
 					}
 
 					const float observedArea{ Vector3::Dot(lightDirection, closestHit.normal) };
@@ -75,9 +96,22 @@ void Renderer::Render(Scene* pScene) const
 					if(observedArea < 0.f)
 						continue;
 
-					finalColor += LightUtils::GetRadiance(light, closestHit.origin) * materials[closestHit.materialIndex]
-						->Shade(closestHit, -lightDirection, rayDirection) * observedArea;
-
+					switch(m_CurrentLightningMode)
+					{
+					case LightningMode::Combined:
+						finalColor += LightUtils::GetRadiance(light, closestHit.origin) * materials[closestHit.materialIndex]
+							->Shade(closestHit, lightDirection, invRayDirection) * observedArea;
+						break;
+					case LightningMode::BDRF:
+						finalColor += materials[closestHit.materialIndex]->Shade(closestHit, lightDirection, invRayDirection);
+						break;
+					case LightningMode::ObservedArea:
+						finalColor += ColorRGB(observedArea, observedArea, observedArea);
+						break;
+					case LightningMode::Radiance:
+						finalColor += LightUtils::GetRadiance(light, closestHit.origin);
+						break;
+					}
 				}
 			}
 

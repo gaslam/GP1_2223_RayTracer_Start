@@ -125,6 +125,14 @@ namespace dae
 		{
 			return *this /= s;
 		}
+
+		const ColorRGB& operator=(float s)
+		{
+			r = s;
+			g = s;
+			b = s;
+			return *this;
+		}
 		#pragma endregion
 	};
 

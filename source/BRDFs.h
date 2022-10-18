@@ -37,8 +37,9 @@ namespace dae
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
 			const Vector3 reflect{ l - 2.f * Vector3::Dot(n,l) * n };
-			float cosReflect{ pow(Vector3::Dot(reflect, v), exp) };
-			return {ks * cosReflect};
+
+			float cosReflect{ks * powf(std::max(0.0f,Vector3::Dot(reflect, v)), exp) };
+			return { cosReflect, cosReflect, cosReflect };
 		}
 
 		/**
@@ -50,9 +51,8 @@ namespace dae
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const float dot{ Vector3::Dot(v,h) };
+			return f0*dot;
 		}
 
 		/**
@@ -64,9 +64,11 @@ namespace dae
 		 */
 		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, float roughness)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const float roughnessSquared{ roughness * roughness }, dotNH{ Vector3::Dot(n,h) };
+			const float dotNHSquared{ dotNH * dotNH };
+			const float denominator{ PI * ((dotNHSquared * (roughnessSquared - 1.f) + 1.f) * (dotNHSquared * (roughnessSquared - 1.f) + 1.f)) };
+			const float result{ roughnessSquared / denominator };
+			return result;
 		}
 
 
@@ -79,9 +81,13 @@ namespace dae
 		 */
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const float remappedRoughness{ ((roughness + 1.f) * (roughness + 1.f)) / 8.f };
+			const float dotNV{ Vector3::Dot(n,v) };
+			if (dotNV < 0.f)
+				return 0.f;
+
+			const float result{ dotNV / (dotNV * (1.f - remappedRoughness) + remappedRoughness) };
+			return result;
 		}
 
 		/**
@@ -94,9 +100,9 @@ namespace dae
 		 */
 		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, float roughness)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			float shadowing{ GeometryFunction_SchlickGGX(n,v,roughness) };
+			float masking{ GeometryFunction_SchlickGGX(n,l,roughness) };
+			return shadowing * masking;
 		}
 
 	}
