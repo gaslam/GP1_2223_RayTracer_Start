@@ -116,18 +116,17 @@ namespace dae
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
 			//If it's a metal, return albedo based on metalness. Otherwise return 0.04f
-			const ColorRGB f0 = m_Metalness > 0.0f ? m_Albedo : ColorRGB{ 0.04f,0.04f,0.04f };
-			const Vector3 lPlusV{ l + v };
-			Vector3 halfVector{ (lPlusV) / lPlusV.Magnitude() };
+			const ColorRGB f0 = m_Metalness <= 0.0f ? m_Albedo : ColorRGB{ 0.04f,0.04f,0.04f };
+			Vector3 halfVector{ l + v };
 			halfVector.Normalize();
 			const ColorRGB fresnel{ BRDF::FresnelFunction_Schlick(halfVector, v.Normalized(), f0) };
 			const float NormalDist{ BRDF::NormalDistribution_GGX(hitRecord.normal, halfVector, m_Roughness) };
 			const float geometry{ BRDF::GeometryFunction_Smith(hitRecord.normal, v.Normalized(), l.Normalized(), m_Roughness) };
 			auto DFG{ NormalDist * fresnel * geometry };
 			const auto specular{ DFG / (4.f * (Vector3::Dot(v,hitRecord.normal) * Vector3::Dot(l,hitRecord.normal))) };
-			ColorRGB kd{ -fresnel.r, -fresnel.g, -fresnel.b };
-			if (m_Metalness > 0.0f)
-				kd = 0;
+			ColorRGB kd{  };
+			if (m_Metalness >= 0.0f)
+				kd = { 1.f - fresnel.r, 1.f-fresnel.g, 1.f -fresnel.b };
 			auto diffuse{ BRDF::Lambert(kd,f0) };
 			return diffuse + specular;
 		}
