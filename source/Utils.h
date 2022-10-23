@@ -143,16 +143,6 @@ namespace dae
 				return false;
 			}
 
-			Plane plane{};
-			plane.origin = triangle.v0;
-			plane.normal = normal;
-
-			if (!HitTest_Plane(plane, ray))
-			{
-				hitRecord.didHit = false;
-				return false;
-			}
-
 			Vector3 intersection{ ray.origin + t * ray.direction };
 			Vector3 edgeV1V0{ triangle.v1 - triangle.v0 };
 			Vector3 pointToSide{ intersection - triangle.v0 };
@@ -189,7 +179,24 @@ namespace dae
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W5
-			assert(false && "No Implemented Yet!");
+			int currentIndices{};
+			int timesToLoop{ static_cast<int>(mesh.indices.size()) / 3 };
+			std::vector<Vector3> transformedPositions{ mesh.transformedPositions };
+			for (int i{}; i < timesToLoop; ++i)
+			{
+				int startIndex{ i * 3 };
+				std::vector<int> range{ mesh.indices[startIndex],mesh.indices[startIndex + 1],mesh.indices[startIndex + 2] };
+				Triangle triangle{ transformedPositions[range[0]],transformedPositions[range[1]],transformedPositions[range[2]] };
+				Vector3 a{ triangle.v1 - triangle.v0 };
+				Vector3 b{ triangle.v2 - triangle.v0 };
+				triangle.normal = triangle.normal;
+				triangle.cullMode = mesh.cullMode;
+				triangle.materialIndex = mesh.materialIndex;
+				if (GeometryUtils::HitTest_Triangle(triangle, ray, hitRecord))
+				{
+					return true;
+				}
+			}
 			return false;
 		}
 

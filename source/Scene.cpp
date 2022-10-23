@@ -30,20 +30,21 @@ namespace dae {
 	{
 		HitRecord selectedHit{ };
 
-		for (const Triangle& triangle : m_Triangles)
+		for (const Plane& plane : m_PlaneGeometries)
 		{
 			HitRecord currentHit{ };
-			GeometryUtils::HitTest_Triangle(triangle, ray, currentHit);
+			GeometryUtils::HitTest_Plane(plane, ray, currentHit);
 			if (currentHit.didHit && currentHit.t < selectedHit.t)
 			{
 				selectedHit = currentHit;
 			}
 		}
 
-		for (const Plane& plane : m_PlaneGeometries)
+		for (const TriangleMesh& triangleMesh : m_TriangleMeshGeometries)
 		{
 			HitRecord currentHit{ };
-			GeometryUtils::HitTest_Plane(plane, ray, currentHit);
+			GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray, currentHit);
+
 			if (currentHit.didHit && currentHit.t < selectedHit.t)
 			{
 				selectedHit = currentHit;
@@ -80,9 +81,10 @@ namespace dae {
 			}
 		}
 
-		for (const Triangle& plane : m_Triangles)
+		for (const TriangleMesh& triangleMesh : m_TriangleMeshGeometries)
 		{
-			if (GeometryUtils::HitTest_Triangle(plane, ray))
+
+			if (GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray))
 			{
 				return true;
 			}
@@ -312,17 +314,35 @@ namespace dae {
 		AddPlane(Vector3{ 5.f,0.f,0.f }, Vector3{ -1.f,0.f,0.f }, matLambert_GrayBlue);
 		AddPlane(Vector3{ -5.f,0.f,0.f }, Vector3{ 1.f,0.f,0.f }, matLambert_GrayBlue);
 
-		//Triangle
-		auto triangle{ Triangle{{ -.75f,.5f,.0f},{-.75f,2.f,.0f},{.75f,.5f,0.f}} };
-		triangle.cullMode = TriangleCullMode::BackFaceCulling;
-		triangle.materialIndex = matLambert_White;
+		//Triangle(Temp)
+		//auto triangle{ Triangle{{ -.75f,.5f,.0f},{-.75f,2.f,.0f},{.75f,.5f,0.f}} };
+		//triangle.cullMode = TriangleCullMode::BackFaceCulling;
+		//triangle.materialIndex = matLambert_White;
 
-		m_Triangles.emplace_back(triangle);
+		//m_Triangles.emplace_back(triangle);
+
+		pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+		pMesh->positions = { { -0.75f,-1.f,.0f},{-.75f,1.f,.0f},{.75f,1.f,1.f},{.75f,-1.f,0.f} };
+		pMesh->indices = {
+			0,1,2, //Triangle 1
+			0,2,3 // Triangle 2
+		};
+
+		pMesh->CalculateNormals();
+		pMesh->Translate({ 0.f, 1.5f, 0.f });
+		pMesh->UpdateTransforms();
 
 		//Light
 		AddPointLight(Vector3(0.f, 5.f, 5.f), 50.f, ColorRGB{ 1.f,.61f,.45f });
 		AddPointLight(Vector3(-2.5f, 5.f, -5.f), 70.f, ColorRGB{ 1.f,.8f,.45f });
 		AddPointLight(Vector3(2.5f, 5.f, -5.f), 50.f, ColorRGB{ .34f,.47f,.68f });
+	}
+
+	void Scene_W4::Update(Timer* pTimer)
+	{
+		Scene::Update(pTimer);
+		pMesh->RotateY(PI_DIV_2 * pTimer->GetTotal());
+		pMesh->UpdateTransforms();
 	}
 
 #pragma endregion

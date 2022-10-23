@@ -33,8 +33,8 @@ namespace dae
 	struct Triangle
 	{
 		Triangle() = default;
-		Triangle(const Vector3& _v0, const Vector3& _v1, const Vector3& _v2, const Vector3& _normal):
-			v0{_v0}, v1{_v1}, v2{_v2}, normal{_normal.Normalized()}{}
+		Triangle(const Vector3& _v0, const Vector3& _v1, const Vector3& _v2, const Vector3& _normal) :
+			v0{ _v0 }, v1{ _v1 }, v2{ _v2 }, normal{ _normal.Normalized() } {}
 
 		Triangle(const Vector3& _v0, const Vector3& _v1, const Vector3& _v2) :
 			v0{ _v0 }, v1{ _v1 }, v2{ _v2 }
@@ -57,8 +57,8 @@ namespace dae
 	struct TriangleMesh
 	{
 		TriangleMesh() = default;
-		TriangleMesh(const std::vector<Vector3>& _positions, const std::vector<int>& _indices, TriangleCullMode _cullMode):
-		positions(_positions), indices(_indices), cullMode(_cullMode)
+		TriangleMesh(const std::vector<Vector3>& _positions, const std::vector<int>& _indices, TriangleCullMode _cullMode) :
+			positions(_positions), indices(_indices), cullMode(_cullMode)
 		{
 			//Calculate Normals
 			CalculateNormals();
@@ -78,7 +78,7 @@ namespace dae
 		std::vector<int> indices{};
 		unsigned char materialIndex{};
 
-		TriangleCullMode cullMode{TriangleCullMode::BackFaceCulling};
+		TriangleCullMode cullMode{ TriangleCullMode::BackFaceCulling };
 
 		Matrix rotationTransform{};
 		Matrix translationTransform{};
@@ -117,26 +117,50 @@ namespace dae
 			normals.push_back(triangle.normal);
 
 			//Not ideal, but making sure all vertices are updated
-			if(!ignoreTransformUpdate)
+			if (!ignoreTransformUpdate)
 				UpdateTransforms();
 		}
 
 		void CalculateNormals()
 		{
-			assert(false && "No Implemented Yet!");
+			int triangleSides{ 3 };
+			int currentCheckedSides{};
+			while (currentCheckedSides < indices.size())
+			{
+				std::vector<int> range{ indices[currentCheckedSides],indices[currentCheckedSides + 1],indices[currentCheckedSides + 2] };
+				Triangle triangle{ positions[range[0]],positions[range[1]],positions[range[2]] };
+				Vector3 a{ triangle.v1 - triangle.v0 };
+				Vector3 b{ triangle.v2 - triangle.v0 };
+				triangle.normal = Vector3::Cross(a, b);
+				normals.push_back(triangle.normal);
+				currentCheckedSides += triangleSides;
+			}
 		}
 
 		void UpdateTransforms()
 		{
-			assert(false && "No Implemented Yet!");
 			//Calculate Final Transform 
+			Matrix finalTransform{ translationTransform * rotationTransform * scaleTransform };
 			//const auto finalTransform = ...
 
 			//Transform Positions (positions > transformedPositions)
-			//...
+			transformedPositions.reserve(positions.size());
+			for (int i{}; i < positions.size(); ++i)
+			{
+				std::vector<Vector3>::iterator it{ transformedPositions.begin() };
+				std::advance(it, i);
+				transformedPositions.emplace(it,finalTransform.TransformVector(positions[i]));
+			}
 
-			//Transform Normals (normals > transformedNormals)
-			//...
+			////Transform Normals (normals > transformedNormals)
+			////...
+			transformedNormals.reserve(normals.size());
+			for (int i{}; i < normals.size(); ++i)
+			{
+				std::vector<Vector3>::iterator it{ transformedNormals.begin() };
+				std::advance(it, i);
+				transformedNormals.emplace(it,finalTransform.TransformVector(normals[i]));
+			}
 		}
 	};
 #pragma endregion
