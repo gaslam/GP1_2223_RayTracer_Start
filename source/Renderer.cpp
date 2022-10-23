@@ -80,6 +80,7 @@ void Renderer::Render(Scene* pScene) const
 				{
 					Vector3 lightDirection{ LightUtils::GetDirectionToLight(light, closestHit.origin) };
 					Vector3 invRayDirection{ -rayDirection };
+
 					const float lightDirectionMag{ lightDirection.Normalize() };
 
 					if(m_ShadowsEnabled)
@@ -96,11 +97,16 @@ void Renderer::Render(Scene* pScene) const
 					if(observedArea < 0.f)
 						continue;
 
+					if (Vector3::Dot(lightDirection, rayDirection) > 0.f)
+					{
+						lightDirection = -lightDirection;
+					}
+
 					switch(m_CurrentLightningMode)
 					{
 					case LightningMode::Combined:
-						finalColor += LightUtils::GetRadiance(light, closestHit.origin) * materials[closestHit.materialIndex]
-							->Shade(closestHit, lightDirection, invRayDirection) * observedArea;
+						finalColor += materials[closestHit.materialIndex]
+							->Shade(closestHit, -lightDirection, invRayDirection) * LightUtils::GetRadiance(light, closestHit.origin) * observedArea;
 						break;
 					case LightningMode::BDRF:
 						finalColor += materials[closestHit.materialIndex]->Shade(closestHit, lightDirection, invRayDirection);

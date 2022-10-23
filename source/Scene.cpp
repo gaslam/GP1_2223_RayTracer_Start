@@ -30,6 +30,16 @@ namespace dae {
 	{
 		HitRecord selectedHit{ };
 
+		for (const Triangle& triangle : m_Triangles)
+		{
+			HitRecord currentHit{ };
+			GeometryUtils::HitTest_Triangle(triangle, ray, currentHit);
+			if (currentHit.didHit && currentHit.t < selectedHit.t)
+			{
+				selectedHit = currentHit;
+			}
+		}
+
 		for (const Plane& plane : m_PlaneGeometries)
 		{
 			HitRecord currentHit{ };
@@ -69,6 +79,15 @@ namespace dae {
 				return true;
 			}
 		}
+
+		for (const Triangle& plane : m_Triangles)
+		{
+			if (GeometryUtils::HitTest_Triangle(plane, ray))
+			{
+				return true;
+			}
+		}
+
 		return false;
 	}
 
@@ -269,6 +288,41 @@ namespace dae {
 		AddPointLight(Vector3{ 0.f,5.f,5.f }, 50.f, ColorRGB{ 1.f,.61f,.45f });
 		AddPointLight(Vector3{ -2.5f,5.f,-5.f }, 70.f, ColorRGB{ 1.f,.8f,.45f });
 		AddPointLight(Vector3{ 2.5f,2.5f,-5.f }, 50.f, ColorRGB{ .34f,.47f,.68f });
+	}
+
+	void Scene_W4::Initialize()
+	{
+		m_Camera.origin = { 0.f,1.f,-5.f };
+		m_Camera.fovAngle = 45.f;
+
+		//m_Camera.origin = { 0.f,1.f,4.f };
+		//m_Camera.fovAngle = 45.f;
+		//m_Camera.totalYaw = PI;
+
+
+		//Materials
+		const auto matLambert_GrayBlue{ AddMaterial(new Material_Lambert({.49f,.57f,.57f},1.f)) };
+		const auto matLambert_White{ AddMaterial(new Material_Lambert(colors::White,1.f)) };
+
+
+		//Planes
+		AddPlane(Vector3{ 0.f,0.f,10.f }, Vector3{ 0.f,0.f,-1.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f,0.f,0.f }, Vector3{ 0.f,1.f,0.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f,10.f,0.f }, Vector3{ 0.f,-1.f,0.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ 5.f,0.f,0.f }, Vector3{ -1.f,0.f,0.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ -5.f,0.f,0.f }, Vector3{ 1.f,0.f,0.f }, matLambert_GrayBlue);
+
+		//Triangle
+		auto triangle{ Triangle{{ -.75f,.5f,.0f},{-.75f,2.f,.0f},{.75f,.5f,0.f}} };
+		triangle.cullMode = TriangleCullMode::BackFaceCulling;
+		triangle.materialIndex = matLambert_White;
+
+		m_Triangles.emplace_back(triangle);
+
+		//Light
+		AddPointLight(Vector3(0.f, 5.f, 5.f), 50.f, ColorRGB{ 1.f,.61f,.45f });
+		AddPointLight(Vector3(-2.5f, 5.f, -5.f), 70.f, ColorRGB{ 1.f,.8f,.45f });
+		AddPointLight(Vector3(2.5f, 5.f, -5.f), 50.f, ColorRGB{ .34f,.47f,.68f });
 	}
 
 #pragma endregion

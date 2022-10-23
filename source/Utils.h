@@ -77,13 +77,107 @@ namespace dae
 		}
 #pragma endregion
 #pragma region Triangle HitTest
+
+		inline bool SameSide(Vector3 p1, Vector3 p2, Vector3 A, Vector3 B)
+		{
+			Vector3 cp1 = Vector3::Cross(B - A, p1 - A);
+			Vector3 cp2 = Vector3::Cross(B - A, p2 - A);
+			if (Vector3::Dot(cp1, cp2) >= 0.f) return true;
+			return false;
+
+		}
+
+		inline bool PointInTriangle(Triangle triangle, Vector3 P)
+		{
+			if (SameSide(P, triangle.v0, triangle.v1, triangle.v2) && SameSide(P, triangle.v1, triangle.v0, triangle.v2) && SameSide(P, triangle.v2, triangle.v0, triangle.v1))
+			{
+				Vector3 vc1 = Vector3::Cross(triangle.v0 - triangle.v1, triangle.v0 - triangle.v2);
+				if (Vector3::Dot(triangle.v0 - P, vc1) <= .01f)
+					return true;
+			}
+
+			return false;
+		}
+
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			assert(false && "No Implemented Yet!");
+
+			auto a{ triangle.v1 - triangle.v0 };
+			auto b{ triangle.v2 - triangle.v0 };
+
+			auto triangleCenter{ (triangle.v0 + triangle.v1 + triangle.v2) / 3.f };
+			auto normal{ Vector3::Cross(a,b) };
+
+			if (Vector3::Dot(triangle.normal, ray.direction) == .0f)
+			{
+				hitRecord.didHit = false;
+				return false;
+			}
+
+			if (triangle.cullMode != TriangleCullMode::NoCulling)
+			{
+				if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+				{
+					if (Vector3::Dot(normal, ray.direction) < 0.f)
+					{
+						hitRecord.didHit = false;
+						return false;
+					}
+				}
+				else if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
+				{
+					if (Vector3::Dot(normal, ray.direction) > 0.f)
+					{
+						hitRecord.didHit = false;
+						return false;
+					}
+				}
+			}
+
+			auto t{ Vector3::Dot(triangleCenter - ray.origin, normal) / Vector3::Dot(ray.direction, normal) };
+
+			if (t < ray.min || t > ray.max)
+			{
+				hitRecord.didHit = false;
+				return false;
+			}
+
+			Plane plane{};
+			plane.origin = triangle.v0;
+			plane.normal = normal;
+
+			if (!HitTest_Plane(plane, ray))
+			{
+				hitRecord.didHit = false;
+				return false;
+			}
+
+			Vector3 intersection{ ray.origin + t * ray.direction };
+			Vector3 edgeV1V0{ triangle.v1 - triangle.v0 };
+			Vector3 pointToSide{ intersection - triangle.v0 };
+
+			if (Vector3::Dot(triangle.normal, Vector3::Cross(edgeV1V0, pointToSide)) < 0.f)
+			{
+				hitRecord.didHit = false;
+				return false;
+			}
+
+			if (PointInTriangle(triangle, intersection))
+			{
+				if (!ignoreHitRecord)
+				{
+					hitRecord.origin = intersection;
+					hitRecord.didHit = true;
+					hitRecord.materialIndex = triangle.materialIndex;
+					hitRecord.normal = normal;
+					hitRecord.t = t;
+				}
+				return true;
+			}
 			return false;
 		}
+
 
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
 		{
