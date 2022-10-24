@@ -140,7 +140,7 @@ namespace dae
 		void UpdateTransforms()
 		{
 			//Calculate Final Transform 
-			Matrix finalTransform{ translationTransform * rotationTransform * scaleTransform };
+			Matrix finalTransform{ rotationTransform* translationTransform * scaleTransform };
 			//const auto finalTransform = ...
 
 			//Transform Positions (positions > transformedPositions)
@@ -149,7 +149,7 @@ namespace dae
 			{
 				std::vector<Vector3>::iterator it{ transformedPositions.begin() };
 				std::advance(it, i);
-				transformedPositions.emplace(it,finalTransform.TransformVector(positions[i]));
+				transformedPositions.emplace(it,finalTransform.TransformPoint(positions[i]));
 			}
 
 			////Transform Normals (normals > transformedNormals)
@@ -159,7 +159,7 @@ namespace dae
 			{
 				std::vector<Vector3>::iterator it{ transformedNormals.begin() };
 				std::advance(it, i);
-				transformedNormals.emplace(it,finalTransform.TransformVector(normals[i]));
+				transformedNormals.emplace(it,finalTransform.TransformPoint(normals[i]));
 			}
 		}
 	};

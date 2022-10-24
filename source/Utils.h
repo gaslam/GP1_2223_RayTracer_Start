@@ -178,7 +178,6 @@ namespace dae
 #pragma region TriangeMesh HitTest
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
 			int currentIndices{};
 			int timesToLoop{ static_cast<int>(mesh.indices.size()) / 3 };
 			std::vector<Vector3> transformedPositions{ mesh.transformedPositions };
