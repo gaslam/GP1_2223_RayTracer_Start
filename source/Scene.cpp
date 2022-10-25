@@ -40,21 +40,21 @@ namespace dae {
 			}
 		}
 
-		for (const TriangleMesh& triangleMesh : m_TriangleMeshGeometries)
+		for (const Sphere& sphere : m_SphereGeometries)
 		{
 			HitRecord currentHit{ };
-			GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray, currentHit);
-
+			GeometryUtils::HitTest_Sphere(sphere, ray, currentHit);
 			if (currentHit.didHit && currentHit.t < selectedHit.t)
 			{
 				selectedHit = currentHit;
 			}
 		}
 
-		for (const Sphere& sphere : m_SphereGeometries)
+		for (const TriangleMesh& triangleMesh : m_TriangleMeshGeometries)
 		{
 			HitRecord currentHit{ };
-			GeometryUtils::HitTest_Sphere(sphere, ray, currentHit);
+			GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray, currentHit);
+
 			if (currentHit.didHit && currentHit.t < selectedHit.t)
 			{
 				selectedHit = currentHit;
@@ -376,16 +376,19 @@ namespace dae {
 		m_Meshes[0] = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
 		m_Meshes[0]->AppendTriangle(baseTriangle, true);
 		m_Meshes[0]->Translate({ -1.75f,4.5f,0.f });
+		m_Meshes[0]->CalculateNormals();
 		m_Meshes[0]->UpdateTransforms();
 
 		m_Meshes[1] = AddTriangleMesh(TriangleCullMode::FrontFaceCulling, matLambert_White);
 		m_Meshes[1]->AppendTriangle(baseTriangle, true);
 		m_Meshes[1]->Translate({ 0.f,4.5f,0.f });
+		m_Meshes[1]->CalculateNormals();
 		m_Meshes[1]->UpdateTransforms();
 
 		m_Meshes[2] = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
 		m_Meshes[2]->AppendTriangle(baseTriangle, true);
 		m_Meshes[2]->Translate({ 1.75f,4.5f,0.f });
+		m_Meshes[2]->CalculateNormals();
 		m_Meshes[2]->UpdateTransforms();
 
 		AddPointLight(Vector3(0.f, 5.f, 5.f), 50.f, ColorRGB{ 1.f,.61f,.45f });

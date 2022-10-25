@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 struct SDL_Window;
 struct SDL_Surface;
@@ -8,6 +9,9 @@ struct SDL_Surface;
 namespace dae
 {
 	class Scene;
+	struct Camera;
+	struct Light;
+	class Material;
 
 	class Renderer final
 	{
@@ -25,6 +29,8 @@ namespace dae
 
 		void CycleLightningMode();
 		void ToggleShadows() { m_ShadowsEnabled = !m_ShadowsEnabled; };
+
+		void RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float aspectRatio, const Camera& camera, const std::vector<Light>& lights, const std::vector<Material*>& materials) const;
 
 	private:
 		enum class LightningMode

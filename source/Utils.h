@@ -78,13 +78,18 @@ namespace dae
 #pragma endregion
 #pragma region Triangle HitTest
 
+		inline bool isOnSameSide(const Vector3& side, const Vector3& pointToSide, const Triangle& triangle)
+		{
+			if (Vector3::Dot(triangle.normal, Vector3::Cross(side, pointToSide)) < 0.f)
+			{
+				return false;
+			}
+			return true;
+		}
+    
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-
-			auto a{ triangle.v1 - triangle.v0 };
-			auto b{ triangle.v2 - triangle.v0 };
-
 			auto triangleCenter{ (triangle.v0 + triangle.v1 + triangle.v2) / 3.f };
 
 			if (dae::AreEqual(Vector3::Dot(triangle.normal, ray.direction), .0f))
@@ -97,16 +102,17 @@ namespace dae
 			{
 				if (Vector3::Dot(triangle.normal, ray.direction) > 0.f)
 				{
-					hitRecord.didHit = false;
-					return false;
+					if (Vector3::Dot(triangle.normal, ray.direction) < 0.f)
+					{
+						return false;
+					}
 				}
-			}
-			else if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
-			{
-				if (Vector3::Dot(triangle.normal, ray.direction) < 0.f)
+				if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
 				{
-					hitRecord.didHit = false;
-					return false;
+					if (Vector3::Dot(triangle.normal, ray.direction) > 0.f)
+					{
+						return false;
+					}
 				}
 			}
 
@@ -119,37 +125,21 @@ namespace dae
 			}
 
 			Vector3 intersection{ ray.origin + t * ray.direction };
-			Vector3 side{ triangle.v1 - triangle.v0 };
-			Vector3 pointToSide{ intersection - triangle.v0 };
 
-			if (Vector3::Dot(triangle.normal, Vector3::Cross(side, pointToSide)) < 0.f)
-			{
+			if (!isOnSameSide(intersection - triangle.v0, triangle.v1 - triangle.v0, triangle))
 				return false;
-			}
-			side = triangle.v2 - triangle.v1;
-			pointToSide = intersection - triangle.v1;
 
-			if (Vector3::Dot(triangle.normal, Vector3::Cross(side, pointToSide)) < 0.f)
-			{
+			if (!isOnSameSide(intersection - triangle.v1, triangle.v2 - triangle.v1, triangle))
 				return false;
-			}
 
-			side = triangle.v0 - triangle.v2;
-			pointToSide = intersection - triangle.v2;
-
-			if (Vector3::Dot(triangle.normal, Vector3::Cross(side, pointToSide)) < 0.f)
-			{
+			if (!isOnSameSide(intersection - triangle.v2, triangle.v0 - triangle.v2, triangle))
 				return false;
-			}
 
-			if (!ignoreHitRecord)
-			{
-				hitRecord.origin = intersection;
-				hitRecord.didHit = true;
-				hitRecord.materialIndex = triangle.materialIndex;
-				hitRecord.normal = triangle.normal;
-				hitRecord.t = t;
-			}
+			hitRecord.origin = intersection;
+			hitRecord.didHit = true;
+			hitRecord.materialIndex = triangle.materialIndex;
+			hitRecord.normal = triangle.normal;
+			hitRecord.t = t;
 			return true;
 		}
 
@@ -164,21 +154,14 @@ namespace dae
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			hitRecord.t = FLT_MAX;
-			int currentIndices{};
-			int timesToLoop{ static_cast<int>(mesh.indices.size()) / 3 };
-			std::vector<Vector3> transformedPositions{ mesh.transformedPositions };
-			bool isHit{ false };
-			for (int i{}; i < timesToLoop; ++i)
+			for (size_t i{}; i < mesh.indices.size(); i += 3)
 			{
-				int startIndex{ i * 3 };
-				std::vector<int> range{ mesh.indices[startIndex],mesh.indices[startIndex + 1],mesh.indices[startIndex + 2] };
-				Triangle triangle{ transformedPositions[range[0]],transformedPositions[range[1]],transformedPositions[range[2]] };
-				Vector3 a{ triangle.v1 - triangle.v0 };
-				Vector3 b{ triangle.v2 - triangle.v0 };
-				triangle.normal = triangle.normal;
+				Triangle triangle{ mesh.transformedPositions[mesh.indices[i]],mesh.transformedPositions[mesh.indices[i + 1]],mesh.transformedPositions[mesh.indices[i + 2]] };
+				triangle.normal = mesh.normals[i];
 				triangle.cullMode = mesh.cullMode;
 				triangle.materialIndex = mesh.materialIndex;
 				HitRecord newHit{};
+        
 				if (GeometryUtils::HitTest_Triangle(triangle, ray, newHit))
 				{
 					if (hitRecord.t > newHit.t && !ignoreHitRecord)
