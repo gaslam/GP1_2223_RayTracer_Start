@@ -98,9 +98,9 @@ namespace dae
 				return false;
 			}
 
-			if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+			if (triangle.cullMode != TriangleCullMode::NoCulling)
 			{
-				if (Vector3::Dot(triangle.normal, ray.direction) > 0.f)
+				if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
 				{
 					if (Vector3::Dot(triangle.normal, ray.direction) < 0.f)
 					{
@@ -154,6 +154,7 @@ namespace dae
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			hitRecord.t = FLT_MAX;
+			bool isHit{ false };
 			for (size_t i{}; i < mesh.indices.size(); i += 3)
 			{
 				Triangle triangle{ mesh.transformedPositions[mesh.indices[i]],mesh.transformedPositions[mesh.indices[i + 1]],mesh.transformedPositions[mesh.indices[i + 2]] };
