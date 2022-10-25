@@ -320,11 +320,12 @@ namespace dae {
 		//triangle.materialIndex = matLambert_White;
 
 		//m_Triangles.emplace_back(triangle);
+		
 
 		pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
-		Utils::ParseOBJ("Resources/simple_cube.obj", pMesh->positions, pMesh->normals, pMesh->indices);
-		pMesh->Translate({ 0.f, 2.f, 0.f });
-		pMesh->Scale({ .7f,.7f,.7f });
+		Utils::ParseOBJ("Resources/lowpoly_bunny.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		pMesh->Translate({ 0.f, 0.f, 0.f });
+		pMesh->Scale({ 2.f,2.f,2.f });
 		pMesh->UpdateTransforms();
 
 		//Light

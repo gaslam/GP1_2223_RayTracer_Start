@@ -140,11 +140,11 @@ namespace dae
 		void UpdateTransforms()
 		{
 			//Calculate Final Transform 
-			Matrix finalTransform{ rotationTransform* translationTransform * scaleTransform };
+			Matrix finalTransform{ scaleTransform * rotationTransform* translationTransform };
 			//const auto finalTransform = ...
 
 			//Transform Positions (positions > transformedPositions)
-			transformedPositions.reserve(positions.size());
+			transformedPositions.clear();
 			for (int i{}; i < positions.size(); ++i)
 			{
 				std::vector<Vector3>::iterator it{ transformedPositions.begin() };
@@ -154,7 +154,7 @@ namespace dae
 
 			////Transform Normals (normals > transformedNormals)
 			////...
-			transformedNormals.reserve(normals.size());
+			transformedNormals.clear();
 			for (int i{}; i < normals.size(); ++i)
 			{
 				std::vector<Vector3>::iterator it{ transformedNormals.begin() };
