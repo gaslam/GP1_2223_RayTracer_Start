@@ -86,7 +86,7 @@ namespace dae
 			}
 			return true;
 		}
-
+    
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
@@ -98,9 +98,9 @@ namespace dae
 				return false;
 			}
 
-			if (triangle.cullMode != TriangleCullMode::NoCulling)
+			if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
 			{
-				if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+				if (Vector3::Dot(triangle.normal, ray.direction) > 0.f)
 				{
 					if (Vector3::Dot(triangle.normal, ray.direction) < 0.f)
 					{
@@ -154,7 +154,6 @@ namespace dae
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			hitRecord.t = FLT_MAX;
-			bool isHit{ false };
 			for (size_t i{}; i < mesh.indices.size(); i += 3)
 			{
 				Triangle triangle{ mesh.transformedPositions[mesh.indices[i]],mesh.transformedPositions[mesh.indices[i + 1]],mesh.transformedPositions[mesh.indices[i + 2]] };
@@ -162,9 +161,10 @@ namespace dae
 				triangle.cullMode = mesh.cullMode;
 				triangle.materialIndex = mesh.materialIndex;
 				HitRecord newHit{};
-				if (GeometryUtils::HitTest_Triangle(triangle, ray, newHit, ignoreHitRecord))
+        
+				if (GeometryUtils::HitTest_Triangle(triangle, ray, newHit))
 				{
-					if (hitRecord.t > newHit.t)
+					if (hitRecord.t > newHit.t && !ignoreHitRecord)
 					{
 						hitRecord = newHit;
 					}
