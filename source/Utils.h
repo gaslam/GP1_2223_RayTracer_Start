@@ -90,6 +90,9 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
+			auto a{ triangle.v1 - triangle.v0 };
+			auto b{ triangle.v2 - triangle.v0 };
+
 			auto triangleCenter{ (triangle.v0 + triangle.v1 + triangle.v2) / 3.f };
 
 			if (dae::AreEqual(Vector3::Dot(triangle.normal, ray.direction), .0f))
@@ -98,21 +101,20 @@ namespace dae
 				return false;
 			}
 
-			if (triangle.cullMode != TriangleCullMode::NoCulling)
+			if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
 			{
-				if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+				if (Vector3::Dot(triangle.normal, ray.direction) > 0.f)
 				{
-					if (Vector3::Dot(triangle.normal, ray.direction) < 0.f)
-					{
-						return false;
-					}
+					hitRecord.didHit = false;
+					return false;
 				}
-				if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
+			}
+			else if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
+			{
+				if (Vector3::Dot(triangle.normal, ray.direction) < 0.f)
 				{
-					if (Vector3::Dot(triangle.normal, ray.direction) > 0.f)
-					{
-						return false;
-					}
+					hitRecord.didHit = false;
+					return false;
 				}
 			}
 
@@ -125,21 +127,37 @@ namespace dae
 			}
 
 			Vector3 intersection{ ray.origin + t * ray.direction };
+			Vector3 side{ triangle.v1 - triangle.v0 };
+			Vector3 pointToSide{ intersection - triangle.v0 };
 
-			if (!isOnSameSide(intersection - triangle.v0, triangle.v1 - triangle.v0, triangle))
+			if (Vector3::Dot(triangle.normal, Vector3::Cross(side, pointToSide)) < 0.f)
+			{
 				return false;
+			}
+			side = triangle.v2 - triangle.v1;
+			pointToSide = intersection - triangle.v1;
 
-			if (!isOnSameSide(intersection - triangle.v1, triangle.v2 - triangle.v1, triangle))
+			if (Vector3::Dot(triangle.normal, Vector3::Cross(side, pointToSide)) < 0.f)
+			{
 				return false;
+			}
 
-			if (!isOnSameSide(intersection - triangle.v2, triangle.v0 - triangle.v2, triangle))
+			side = triangle.v0 - triangle.v2;
+			pointToSide = intersection - triangle.v2;
+
+			if (Vector3::Dot(triangle.normal, Vector3::Cross(side, pointToSide)) < 0.f)
+			{
 				return false;
+			}
 
-			hitRecord.origin = intersection;
-			hitRecord.didHit = true;
-			hitRecord.materialIndex = triangle.materialIndex;
-			hitRecord.normal = triangle.normal;
-			hitRecord.t = t;
+			if (!ignoreHitRecord)
+			{
+				hitRecord.origin = intersection;
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = triangle.materialIndex;
+				hitRecord.normal = triangle.normal;
+				hitRecord.t = t;
+			}
 			return true;
 		}
 
