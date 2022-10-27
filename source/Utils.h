@@ -90,8 +90,6 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			auto a{ triangle.v1 - triangle.v0 };
-			auto b{ triangle.v2 - triangle.v0 };
 
 			auto triangleCenter{ (triangle.v0 + triangle.v1 + triangle.v2) / 3.f };
 
@@ -171,26 +169,24 @@ namespace dae
 #pragma region TriangeMesh HitTest
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			hitRecord.t = FLT_MAX;
-			bool isHit{ false };
-			for (size_t i{}; i < mesh.indices.size(); i += 3)
+			float currentT{ FLT_MAX };
+			for (int i{}; i < mesh.indices.size(); i += 3)
 			{
-				Triangle triangle{ mesh.transformedPositions[mesh.indices[i]],mesh.transformedPositions[mesh.indices[i + 1]],mesh.transformedPositions[mesh.indices[i + 2]] };
-				triangle.normal = mesh.normals[i];
+				Triangle triangle{ mesh.transformedPositions[mesh.indices[i]], mesh.transformedPositions[mesh.indices[i]],mesh.transformedPositions[mesh.indices[i]] };
 				triangle.cullMode = mesh.cullMode;
 				triangle.materialIndex = mesh.materialIndex;
+				int index{ i };
+				if (index > 1) index = 1 / 3;
+				triangle.normal = triangle.normal;
 				HitRecord newHit{};
-        
-				if (GeometryUtils::HitTest_Triangle(triangle, ray, newHit))
+				if (HitTest_Triangle(triangle,ray,hitRecord,ignoreHitRecord) && hitRecord.didHit && currentT > newHit.t)
 				{
-					if (hitRecord.t > newHit.t && !ignoreHitRecord)
-					{
-						hitRecord = newHit;
-					}
-					isHit = true;
+					if (ignoreHitRecord) return true;
+					currentT = newHit.t;
+					hitRecord = newHit;
 				}
 			}
-			return isHit;
+			return hitRecord.didHit;
 		}
 
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
