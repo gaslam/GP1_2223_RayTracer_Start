@@ -123,17 +123,14 @@ namespace dae
 
 		void CalculateNormals()
 		{
-			int triangleSides{ 3 };
-			int currentCheckedSides{};
-			while (currentCheckedSides < indices.size())
+			for(int i{}; i < indices.size() / 3; ++i)
 			{
-				std::vector<int> range{ indices[currentCheckedSides],indices[currentCheckedSides + 1],indices[currentCheckedSides + 2] };
+				std::vector<int> range{ indices[i],indices[i + 1],indices[i + 2] };
 				Triangle triangle{ positions[range[0]],positions[range[1]],positions[range[2]] };
 				Vector3 a{ triangle.v1 - triangle.v0 };
 				Vector3 b{ triangle.v2 - triangle.v0 };
-				triangle.normal = Vector3::Cross(a, b);
-				normals.push_back(triangle.normal);
-				currentCheckedSides += triangleSides;
+				triangle.normal = Vector3::Cross(a, b).Normalized();
+				normals[i] = triangle.normal;
 			}
 		}
 
@@ -159,7 +156,7 @@ namespace dae
 			{
 				std::vector<Vector3>::iterator it{ transformedNormals.begin() };
 				std::advance(it, i);
-				transformedNormals.emplace(it,finalTransform.TransformPoint(normals[i]));
+				transformedNormals.emplace(it,finalTransform.TransformVector(normals[i]));
 			}
 		}
 	};

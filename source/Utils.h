@@ -170,16 +170,18 @@ namespace dae
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			float currentT{ FLT_MAX };
-			for (int i{}; i < mesh.indices.size(); i += 3)
+			HitRecord newHit{};
+			Triangle triangle;
+			for (size_t i{}; i < mesh.transformedNormals.size(); ++i)
 			{
-				Triangle triangle{ mesh.transformedPositions[mesh.indices[i]], mesh.transformedPositions[mesh.indices[i]],mesh.transformedPositions[mesh.indices[i]] };
+				const size_t startIndex{ i * 3 };
+				triangle.v0 = mesh.transformedPositions[mesh.indices[startIndex]];
+				triangle.v1 = mesh.transformedPositions[mesh.indices[startIndex + 1]];
+				triangle.v2 = mesh.transformedPositions[mesh.indices[startIndex + 2]];
 				triangle.cullMode = mesh.cullMode;
 				triangle.materialIndex = mesh.materialIndex;
-				int index{ i };
-				if (index > 1) index = 1 / 3;
-				triangle.normal = triangle.normal;
-				HitRecord newHit{};
-				if (HitTest_Triangle(triangle,ray,hitRecord,ignoreHitRecord) && hitRecord.didHit && currentT > newHit.t)
+				triangle.normal = mesh.transformedNormals[i];
+				if (HitTest_Triangle(triangle,ray,newHit,ignoreHitRecord) && currentT > newHit.t)
 				{
 					if (ignoreHitRecord) return true;
 					currentT = newHit.t;
