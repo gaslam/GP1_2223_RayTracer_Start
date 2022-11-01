@@ -101,7 +101,7 @@ namespace dae
 
 			if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
 			{
-				if (Vector3::Dot(triangle.normal, ray.direction) > 0.f)
+				if (Vector3::Dot(triangle.normal, ray.direction) < 0.f)
 				{
 					hitRecord.didHit = false;
 					return false;
@@ -109,7 +109,7 @@ namespace dae
 			}
 			else if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
 			{
-				if (Vector3::Dot(triangle.normal, ray.direction) < 0.f)
+				if (Vector3::Dot(triangle.normal, ray.direction) > 0.f)
 				{
 					hitRecord.didHit = false;
 					return false;
@@ -181,11 +181,14 @@ namespace dae
 				triangle.cullMode = mesh.cullMode;
 				triangle.materialIndex = mesh.materialIndex;
 				triangle.normal = mesh.transformedNormals[i];
-				if (HitTest_Triangle(triangle,ray,newHit,ignoreHitRecord) && currentT > newHit.t)
+				if (HitTest_Triangle(triangle,ray,newHit,ignoreHitRecord))
 				{
 					if (ignoreHitRecord) return true;
-					currentT = newHit.t;
-					hitRecord = newHit;
+					if (currentT > newHit.t)
+					{
+						currentT = newHit.t;
+						hitRecord = newHit;
+					}
 				}
 			}
 			return hitRecord.didHit;
